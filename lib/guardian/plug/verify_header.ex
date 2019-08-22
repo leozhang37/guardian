@@ -89,9 +89,15 @@ if Code.ensure_loaded?(Plug) do
            claims_to_check <- Keyword.get(opts, :claims, %{}),
            key <- storage_key(conn, opts),
            {:ok, claims} <- Guardian.decode_and_verify(module, token, claims_to_check, opts) do
-        conn
+        conn = conn
         |> Guardian.Plug.put_current_token(token, key: key)
         |> Guardian.Plug.put_current_claims(claims, key: key)
+		
+        if Guardian.Plug.session_active?(conn) do
+          Guardian.Plug.put_session_token(conn, token, opts)
+        else
+          conn
+        end
       else
         :no_token_found ->
           conn
