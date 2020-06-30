@@ -357,15 +357,19 @@ if Code.ensure_loaded?(Plug) do
       with {:ok, _} <- impl.revoke(token, opts), do: {:ok, conn}
     end
 
-    # defp do_sign_out(%{private: private} = conn, impl, :all, opts) do
-#       private
-#       |> Map.keys()
-#       |> Enum.map(&key_from_other/1)
-#       |> Enum.filter(&(&1 != nil))
-#       |> Enum.uniq()
-#       |> Enum.reduce({:ok, conn}, &clear_key(&1, &2, impl, opts))
-#       |> cleanup_session(opts)
-#     end
+    defp do_sign_out(%{private: private} = conn, impl, :all, opts) do
+		revoke_token(conn, impl, :all, opts)  
+		
+      private
+      |> Map.keys()
+      |> Enum.map(&key_from_other/1)
+      |> Enum.filter(&(&1 != nil))
+      |> Enum.uniq()
+      |> Enum.reduce({:ok, conn}, &clear_key(&1, &2, impl, opts))
+      |> cleanup_session(opts)
+	
+	
+    end
 
     defp do_sign_out(conn, impl, key, opts) do
       with {:ok, conn} <- returning_tuple({impl, :before_sign_out, [conn, key, opts]}),
